@@ -1,13 +1,23 @@
 from flask import Flask, request,jsonify
 from flask_sqlalchemy import SLQAlchemy
+from flask_cors import CORS
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
 
 # passar o caminho para alguns arquivos do flask
 app=Flask(__name__)
 
 app.config['SLQALCHEMY_DATABASE_URI']="sqlite:///bd_nome"
 
-#inicializar a conexao com o db
+login_manager=Login_Manager()
+#Inicializar a conexao com o db
 db=SQLAlchemy(app)
+login_manage.init_app(app)
+#Nome da rota onde queremos fazer login
+login_manage.login_vew='login'
+CORS(app)
+
+class User(db.Model, UserMixin):
+	id, username,password
 
 #Modelagem
 class Product(db.Model):
@@ -72,9 +82,28 @@ del get_product(product_id):
 	product_list.append(product_datas)
 	return (product_list)
 
-@app.route('/'):
+@app.route('/')
 def greetings():
 	return "Oi oi oi"
 
+#Autenticacao
+@login_manager.user_loader
+def load_user(id):
+	return User.query.get(int(id))
+
+@app.route('/login')
+def login():
+	data=request.json
+	user=User.query.filter_by(username=data.get("username")).first
+	if user and data.get("password")==user.password:
+		login_user(user)
+		return jsonfy({mesage:"sucesso"})
+	return "erro", 401
+
+@login_required
+@app.logout('/logout'):
+	logout_user()
+	return "deslogado"
+	
 if __name__=="__main__":
 	app.run(debug=True)
