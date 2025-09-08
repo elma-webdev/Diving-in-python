@@ -1,0 +1,109 @@
+from flask import Flask, request,jsonify
+from flask_sqlalchemy import SLQAlchemy
+from flask_cors import CORS
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
+
+# passar o caminho para alguns arquivos do flask
+app=Flask(__name__)
+
+app.config['SLQALCHEMY_DATABASE_URI']="sqlite:///bd_nome"
+
+login_manager=Login_Manager()
+#Inicializar a conexao com o db
+db=SQLAlchemy(app)
+login_manage.init_app(app)
+#Nome da rota onde queremos fazer login
+login_manage.login_vew='login'
+CORS(app)
+
+class User(db.Model, UserMixin):
+	id, username,password
+
+#Modelagem
+class Product(db.Model):
+	id=db.Column(db.Integer, primary-key=True)
+	nome=db.Column(db.String(120), nullable=False)
+	price=db.Column(db.Float, nullable=False)
+	descricao=db.Column(db.Text)
+
+
+// Flask shell; db.create.all(); db.session.commit();
+
+
+@app.route('/add_product', methods=["POST"]):
+	data=request.json
+if "nome" in data and "price" in data:
+	product=Product(nome=data["nome"], price=data["price"], descricao=data.get["descricao", ""])	
+	db.session.add(product)
+	db.session.commit()
+	return "Sucesso"
+return jsonify({"message":"erro"}), 400
+
+@app.route('/add_product/<int:product_id>', methods=["DELETE"]):
+def delete_product(product_id):
+	product=Product.query.get(product_id)
+		if product:
+	db.session.delete(product)
+	db.session.commit()
+	return "Sucesso"
+return jsonify({"message":"erro"}), 404
+
+@app.route('/product/<int:product_id>',  methods=["GET"]):
+del get_product(product_id):
+	product=Product.query.get(product_id)
+	if product:
+	return jsonfy({
+	"id":product.id
+	"nome":product.nome
+})
+return jsonify({"message":"erro"}), 404
+
+@app.route('/edit_product/<int:product_id>', methods=["PUT"]):
+def edit_product(product_id):
+	product=Product.query.get(product_id)
+		if not product:
+	return jsonify({"message":"erro"}), 404
+	data=request.json
+	if "nome" in data or "price" in data:
+	product.price=data["price"]
+	return jsonify({"message":"actualizado"}),
+	db.session.commit()
+
+@app.route('/product',  methods=["GET"]):
+del get_product(product_id):
+	product_list=[]
+	product_data=Product.query.all()
+	for product in products:
+	productos={
+	"id":product.id
+	"nome":product.nome
+	"descricao":product.descrica
+}
+	product_list.append(product_datas)
+	return (product_list)
+
+@app.route('/')
+def greetings():
+	return "Oi oi oi"
+
+#Autenticacao
+@login_manager.user_loader
+def load_user(id):
+	return User.query.get(int(id))
+
+@app.route('/login')
+def login():
+	data=request.json
+	user=User.query.filter_by(username=data.get("username")).first
+	if user and data.get("password")==user.password:
+		login_user(user)
+		return jsonfy({mesage:"sucesso"})
+	return "erro", 401
+
+@login_required
+@app.logout('/logout'):
+	logout_user()
+	return "deslogado"
+	
+if __name__=="__main__":
+	app.run(debug=True)
